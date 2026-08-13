@@ -28,13 +28,14 @@ module alu(
         else
             zero = 0;
     
-        if(result[7]==8'b00000001)
-            negative =1;
-        else
-            negative =0;
         
         negative = result[7];
-        overflow = (~(a[7]^b[7])&(a[7]^result[7]));
+        case op
+            3'b000: overflow = (~(a[7]^b[7])&(a[7]^result[7]));
+            3'b001: overflow = ((a[7]^b[7])&(a[7]^result[7]));
+            default: overflow =0;
+        endcase
+        
 
 
 

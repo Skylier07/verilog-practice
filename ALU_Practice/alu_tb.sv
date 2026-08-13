@@ -19,6 +19,19 @@ module alu_test;
         .overflow(overflow)
     );
 
+// Run 1:
+// Passed addition test
+// Passed addition test
+// Failed addition test
+// Failed subtraction test
+// Passed subtraction test
+// Failed AND test
+// Passed OR test
+// Passed XOR test
+// Failed left test
+// Failed left test
+// Failed comparison test
+    
     initial begin
         a = 8'd2;
         b = 8'd1;
@@ -55,7 +68,7 @@ module alu_test;
 
         #1;
         
-        if(result == 2)
+        if(result == 8'b10000010)
             $display("Passed addition test");
         else
             $display("Failed addition test");
@@ -71,10 +84,10 @@ module alu_test;
 
         #1;
                 
-        if(result == 1)
-            $display("Passed subtraction test");
+        if(result == 8'b11111111)
+            $display("Passed subtraction test 1");
         else
-            $display("Failed subtraction test");
+            $display("Failed subtraction test 1");
         if(negative ==0)
             $display("Failed negative test");        
 
@@ -87,9 +100,9 @@ module alu_test;
         #1;
                 
         if(result == 0)
-            $display("Passed subtraction test");
+            $display("Passed subtraction test 2");
         else
-            $display("Failed subtraction test");
+            $display("Failed subtraction test 2");
         if(zero ==0)
             $display("Failed negative test");        
 
@@ -100,7 +113,7 @@ module alu_test;
 
         #1;
 
-        if(result==8'b11111110)
+        if(result==8'b00101100)
             $display("Passed AND test");
         else
             $display("Failed AND test");
@@ -132,25 +145,25 @@ module alu_test;
 
         #1;
 
-        if(result==8'b10011011)
+        if(result==8'b10011010)
             $display("Passed left test");
         else
             $display("Failed left test");
 
         a =8'b10011011;
-        op = 3'b101;   
+        op = 3'b110;   
 
         #1;
 
-        if(result==8'b11001101)
-            $display("Passed left test");
+        if(result==8'b01001101)
+            $display("Passed right test");
         else
-            $display("Failed left test");
+            $display("Failed right test");
 
         
         a = 8'b00101101;
         b = 8'b00101100;
-        op = 3'b100;
+        op = 3'b111;
 
         #1;
 
