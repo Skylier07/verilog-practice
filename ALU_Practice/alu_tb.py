@@ -1,5 +1,6 @@
 import cocotb
 from cocotb.triggers import Timer 
+from alu import model_alu
 
 @cocotb.test()
 async def test_alu(dut):
