@@ -17,7 +17,7 @@ def model_alu(a, b, op):
             overflow =0
     elif op == 0b001:
         result = a-b & 0xFF
-        if(((a >> 7) & 1^(b >> 7) & 1)& (not ((a >> 7) & 1^(result >> 7) & 1))):
+        if(((a >> 7) & 1^(b >> 7) & 1)& (((a >> 7) & 1^(result >> 7) & 1))):
             overflow =1
         else:
             overflow =0
