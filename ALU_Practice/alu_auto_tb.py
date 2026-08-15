@@ -13,12 +13,16 @@ async def test_alu(dut):
             dut.a.value=a_val
             b_val = random.randint(0,255)
             dut.b.value= b_val
+
+
+
             await Timer(1, unit="ns")
 
-            expected = model_alu(a_val, b_val, i)[0]
-            actual = dut.result.value.to_unsigned()
+            expected = model_alu(a_val, b_val, i)
+            actual = (dut.result.value.to_unsigned(), int(dut.zero.value), int(dut.negative.value), int(dut.carry.value), int(dut.overflow.value))
+                        
+            
 
-
-            assert expected == actual
+            assert expected == actual,  f"Testing OP: {dut.op.value}, a: {dut.a.value}, b: {dut.b.value}"
 
  
