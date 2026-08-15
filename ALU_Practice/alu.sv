@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module alu(
         input [7:0]a,
         input [7:0]b,
@@ -30,7 +31,7 @@ module alu(
     
         
         negative = result[7];
-        case op
+        case(op)
             3'b000: overflow = (~(a[7]^b[7])&(a[7]^result[7]));
             3'b001: overflow = ((a[7]^b[7])&(a[7]^result[7]));
             default: overflow =0;

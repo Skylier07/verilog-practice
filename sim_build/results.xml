@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1786774391" />
+    <testcase name="test_alu" classname="alu_tb" file="c:\Users\eason\OneDrive\Documents\Code\Verilog-Practice\ALU_Practice\alu_tb.py" lineno="4" time="0.0" sim_time_ns="9.0" ratio_time="inf" />
+  </testsuite>
+</testsuites>
