@@ -21,7 +21,10 @@ module shift_register #(
         else if(enable) begin
             // q <= q>>1'b1;
             // q[WIDTH-1] <= serial_in;
-            q <= {serial_in, q[WIDTH-1:1]};
+            if(WIDTH>1) 
+                q <= {serial_in, q[WIDTH-1:1]};
+            else
+                q <= serial_in;
         end
     end
 
