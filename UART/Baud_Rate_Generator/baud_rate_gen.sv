@@ -1,6 +1,7 @@
+`timescale 1ns/1ps
 module baud_gen #(
-    parameter CLK_FREQ = 50000000,
-    parameter BAUD_RATE = 115200
+    parameter CLK_FREQ = 10,
+    parameter BAUD_RATE = 100
 )(
     input logic clk,
     input logic reset,
