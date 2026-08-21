@@ -11,9 +11,8 @@ async def module_shift_register(width, clk, reset, enable, load, serial_in, para
         elif(load):
             q = parallel_in
         elif(enable):
-            q = q>>1
-            q[width-1] = serial_in
-        
+            q = (q>>1) | (serial_in<<(width-1))
+        return q
 
 
 
