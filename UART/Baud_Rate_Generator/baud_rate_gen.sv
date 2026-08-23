@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module baud_gen #(
-    parameter CLK_FREQ = 10,
-    parameter BAUD_RATE = 100
+    parameter CLK_FREQ = 100,
+    parameter BAUD_RATE = 10
 )(
     input logic clk,
     input logic reset,
@@ -18,7 +18,7 @@ always @(posedge clk) begin
         counter <= '0;
         tick <= '0;
     end
-    else if(counter == CLK_PER_BIT) begin
+    else if(counter == (CLK_PER_BIT-1)) begin
         counter <= '0;
         tick <= 1'b1; 
     end

@@ -2,7 +2,7 @@ import cocotb
 
 # from baud_rate_gen import baud_gen_model
 import random
-from cocotb.triggers import RisingEdge, ReadOnly, FallingEdge
+from cocotb.triggers import RisingEdge, ReadOnly, FallingEdge, NextTimeStep
 from cocotb.clock import Clock
 
 @cocotb.test()
@@ -26,19 +26,23 @@ async def test_baud(dut):
         else:
             is_reset =0
 
+        dut.reset.value = is_reset
+
         await RisingEdge(dut.clk)
         if(is_reset ==1):
             expected_count =0
             expected_tick = 0
-        elif(expected_count >= 10): #EDIT HERE FOR CLK_PER_BIT 
+        elif(expected_count >=9): #EDIT HERE FOR CLK_PER_BIT 
             expected_count =0
             expected_tick = 1
         else:
             expected_count+=1
             expected_tick = 0
 
+        await ReadOnly()
+
         assert(int(dut.tick.value) == expected_tick)
         
-
+        await NextTimeStep()
 
     
