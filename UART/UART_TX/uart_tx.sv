@@ -87,7 +87,7 @@ logic [7:0]stored_data;
 state_t state;
 logic [2:0]bit_index;
 logic tick; 
-
+logic gonna_start;
 
 always_ff @(posedge clk) begin
     if(reset) begin
@@ -96,33 +96,46 @@ always_ff @(posedge clk) begin
         tx<=1;
     end
     
-    if(baud_tick) begin
-        else if(start && state==IDLE) begin
-            
-            busy <= 1;
-            stored_data <= data_in;
-            tx<=0;
-            state <= START;
-            bit_index<=0;
+    if(start && state==IDLE) begin
+        gonna_start = 1;
+        bit_index <= 0;
 
+
+    end
+    else if (state == START) begin
+        if(baud_tick) begin
+            tx<=0;
+
+            busy <= 1;
+            state <= DATA;
+            tx <= stored_data[bit_index];
+            bit_index<=bit_index + 1'b1;
         end
-        else if (state == START) begin
-            tx<=0;
 
-            busy <= 1;
-            state <= DATA
-        else if(state==DATA) begin
+    end
+    else if(state==DATA) begin
+        if(baud_tick) begin
             busy <= 1;
             tx <= stored_data[bit_index];
-            bit_index++;
+            bit_index<=bit_index+1'b1;
             if(bit_index>=3'd7)
                 state <= STOP;
         end
-        else if(state==STOP) begin
-            tx <=1;
-            busy<=0;
-            state <= IDLE;
-        end
     end
+    else if(state==STOP) begin
+        tx <=1;
+        busy<=0;
+        state <= IDLE;
+    end
+
+    if(baud_tick && gonna_start) begin
+        busy <= 1;
+        stored_data <= data_in;
+        tx<=0;
+        state <= START;
+        bit_index<=0;
+        gonna_start <= 0;
+    end
+// end
 end
 endmodule
