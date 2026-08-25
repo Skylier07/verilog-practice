@@ -48,7 +48,7 @@ always_ff @(posedge clk) begin
                 data_index <= '0;
             end
             else begin
-                bit_index <=
+                bit_index <=0;
                 possible_start <=0;
             end
         end

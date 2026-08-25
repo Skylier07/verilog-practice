@@ -36,6 +36,7 @@ async def drive_uart(dut, value):
         await wait_one_bit()
 
     dut.rx.value=1
+    await wait_one_bit()
 
 async def drive_and_test(dut, value):
     await drive_uart(dut, value)
@@ -47,6 +48,28 @@ async def drive_and_test(dut, value):
     await ReadOnly()
     assert(int(dut.data_valid.value) ==0)
 
+async def random_idle(dut):
+    dut.rx.value = 1
+
+    gap_bits = random.randint(0, 10)
+
+    for _ in range(gap_bits):
+        await wait_one_bit()
+
+async def drive_uart_bad_stop(dut, value):
+    # start
+
+    dut.rx.value = 0
+    await wait_one_bit()
+
+    for i in range(8):
+        dut.rx.value = (value >> i) & 1
+        await wait_one_bit()
+
+    dut.rx.value=0
+    await wait_one_bit()
+    dut.rx.value = 1
+    await wait_one_bit()
 
 @cocotb.test()
 async def test_rx(dut):
@@ -64,7 +87,37 @@ async def test_rx(dut):
     assert (int(dut.data_valid.value) ==0)
     # assert(int(dut.))
 
+    # Exhausive test
     for i in range(0, 255):
         await drive_and_test(dut, i)
         await NextTimeStep()
+        
+    #random idle test
+    for _ in range(50):
+        value=random.randint(0, 255)
+
+        await random_idle(dut)
+        await drive_and_test(dut, value)
+        await NextTimeStep()
+
+
+    #bad stop test
+    await drive_uart_bad_stop(dut, value)
+    for _ in range(10):
+        assert(dut.data_valid.value ==0)
+        await wait_one_bit()
+    await drive_and_test(dut, 100)
+
+
+    #offset test
+
+    await Timer(7, unit="ns")
+    await drive_and_test(dut, 173)
+
+    await Timer(11, unit="ns")
+    await drive_and_test(dut, 73)
+
+    await Timer(19, unit="ns")
+    await drive_and_test(dut, 13)
+
 
