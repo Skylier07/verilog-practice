@@ -22,8 +22,6 @@ async def send_false_start(dut):
     dut.rx.value=1
     await(Timer(5, unit="us"))
 
-
-
 async def wait_one_bit():
     await(Timer(BIT_TIME_NS, unit="ns"))
 
@@ -39,6 +37,15 @@ async def drive_uart(dut, value):
 
     dut.rx.value=1
 
+async def drive_and_test(dut, value):
+    await drive_uart(dut, value)
+    await RisingEdge(dut.data_valid)
+    await ReadOnly()
+
+    assert(int(dut.data_out.value) == value)
+    await RisingEdge(dut.clk)
+    await ReadOnly()
+    assert(int(dut.data_valid.value) ==0)
 
 
 @cocotb.test()
@@ -57,13 +64,7 @@ async def test_rx(dut):
     assert (int(dut.data_valid.value) ==0)
     # assert(int(dut.))
 
-
-    await drive_uart(dut, 23)
-    await RisingEdge(dut.data_valid)
-    await ReadOnly()
-
-    assert(int(dut.data_out.value) == 23)
-    await RisingEdge(dut.clk)
-    await ReadOnly()
-    assert(int(dut.data_valid.value) ==0)
+    for i in range(0, 255):
+        await drive_and_test(dut, i)
+        await NextTimeStep()
 
