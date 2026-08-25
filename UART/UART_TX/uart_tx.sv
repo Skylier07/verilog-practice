@@ -95,6 +95,12 @@ always_ff @(posedge clk) begin
         busy <=0;
         tx<=1;
     end
+    if((~start) && state == IDLE) begin
+        if(baud_tick) begin
+            busy <= 0;
+            tx <= 1;
+        end
+    end
     
     if(start && state==IDLE) begin
         gonna_start = 1;
@@ -123,9 +129,11 @@ always_ff @(posedge clk) begin
         end
     end
     else if(state==STOP) begin
-        tx <=1;
-        busy<=0;
-        state <= IDLE;
+        if(baud_tick) begin
+            tx <=1;
+            busy<=0;
+            state <= IDLE;
+        end
     end
 
     if(baud_tick && gonna_start) begin

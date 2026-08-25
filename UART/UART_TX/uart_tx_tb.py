@@ -71,7 +71,18 @@ async def test_tx(dut):
         if(i>7):
             break
 
+    # Test stop
+    await wait_clocks(dut, 10)
+    await ReadOnly()
 
+    assert(int(dut.busy.value) == 1)
+    assert(int(dut.tx.value) == 1)
+
+    # Test return idle
+    await wait_clocks(dut, 10)
+    await ReadOnly()
+    assert(int(dut.busy.value) == 0)
+    assert(int(dut.tx.value) == 1)
 
 
 
