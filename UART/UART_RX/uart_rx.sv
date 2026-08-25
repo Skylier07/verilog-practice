@@ -48,12 +48,12 @@ always_ff @(posedge clk) begin
                 data_index <= '0;
             end
             else begin
-                bit_index <=0;
+                bit_index <=
                 possible_start <=0;
             end
         end
 
-        if(rx == 0) begin 
+        if(rx == 0 && ~possible_start) begin 
             bit_index <= 0;
             possible_start <= 1; 
         end
