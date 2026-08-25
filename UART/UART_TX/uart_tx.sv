@@ -131,7 +131,7 @@ always_ff @(posedge clk) begin
     else if(state==STOP) begin
         if(baud_tick) begin
             tx <=1;
-            busy<=0;
+            busy<=1;
             state <= IDLE;
         end
     end

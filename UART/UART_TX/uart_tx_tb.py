@@ -29,21 +29,19 @@ async def wait_clocks(dut, n):
     for _ in range(n):
         await RisingEdge(dut.clk)
 
-@cocotb.test()
-async def test_tx(dut):
-    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+async def test_data(dut, data):
+    while True:
+        await RisingEdge(dut.clk)
+        await ReadOnly()
 
-    await reset_dut(dut)
+        if int(dut.busy.value) == 0:
+            break
 
+    assert int(dut.tx.value) == 1
 
-
-    await ReadOnly()
-    # Testing idle    
-    assert(int(dut.tx.value) ==1)
-    assert(int(dut.busy.value) ==0)
 
     await NextTimeStep()
-    assigned_data  = 0b10101010
+    assigned_data  = data
 
     await send_start(dut, assigned_data)
 
@@ -66,10 +64,37 @@ async def test_tx(dut):
 
         bit = (assigned_data >> i) & 1
         i+=1
+        print(
+        f"bit {i}: expected={bit}, "
+        f"actual={int(dut.tx.value)}"
+)
         assert(int(dut.tx.value) ==bit)
 
         if(i>7):
             break
+
+
+@cocotb.test()
+async def test_tx(dut):
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+
+    await reset_dut(dut)
+
+
+
+    await ReadOnly()
+    # Testing idle    
+    assert(int(dut.tx.value) ==1)
+    assert(int(dut.busy.value) ==0)
+
+    await NextTimeStep()
+
+    # Test start, data
+    for _ in range(100):
+        data = random.randint(0, 255)
+
+        await test_data(dut, data)
+
 
     # Test stop
     await wait_clocks(dut, 10)
