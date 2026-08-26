@@ -1,7 +1,7 @@
 import cocotb 
 
 import random
-from cocotb.triggers import RisingEdge, ReadOnly, FallingEdge, NextTimeStep
+from cocotb.triggers import RisingEdge, ReadOnly, FallingEdge, NextTimeStep, Timer
 from cocotb.clock import Clock
 
 async def reset_dut(dut):
@@ -25,6 +25,20 @@ async def send_start(dut, data_in):
 async def wait_clocks(dut, n):
     for _ in range(n):
         await RisingEdge(dut.clk)
+
+BAUD_RATE = 115200
+BIT_TIME_NS = round(1000000000/BAUD_RATE)
+
+async def wait_one_bit():
+    await(Timer(BIT_TIME_NS, unit="ns"))
+
+async def random_idle():
+
+    gap_bits = random.randint(0, 10)
+
+    for _ in range(gap_bits):
+        await wait_one_bit()
+
 
 async def test_data(dut, data):
     await send_start(dut, data)
@@ -51,6 +65,7 @@ async def test_tx(dut):
 
     for i in range (0, 255):
         await test_data(dut, i)
+        await random_idle()
 
 #     assigned_data  = data
 
