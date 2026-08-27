@@ -19,10 +19,12 @@ module uart_tx_fifo #(
     logic fifo_read_en;
     logic [WIDTH-1:0] fifo_read_data;
     logic empty;
+    logic has_started;
 
-    typedef enum logic[1:0] {
+    typedef enum logic[2:0] {
         IDLE, 
         READ,
+        READ_WAIT,
         START_TX,
         WAIT
     } state_t;
@@ -53,6 +55,8 @@ module uart_tx_fifo #(
             state <= IDLE;
             fifo_read_en <= 0;
             tx_start <= 0; 
+            has_started <= 0;
+
         end
         else if(state == IDLE) begin
             if(~empty && ~tx_busy) begin
@@ -61,17 +65,26 @@ module uart_tx_fifo #(
         end
         else if(state == READ) begin
             fifo_read_en <= 1;
+            state <= READ_WAIT;
+        end
+        else if(state == READ_WAIT) begin
+            fifo_read_en <=0;
             state <= START_TX;
         end
         else if(state == START_TX) begin
             data_in_tx <= fifo_read_data;
-            fifo_read_en <=0;
             tx_start <= 1;
             state <= WAIT;
         end
         else if(state == WAIT) begin
-            if(tx_busy == 0)
+            tx_start <= 0;
+            if(tx_busy == 1) begin
+                has_started <= 1;
+            end
+            if(tx_busy == 0 && has_started) begin
                 state <= IDLE;
+                has_started <= 0;
+            end
         end
 
 

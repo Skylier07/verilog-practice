@@ -22,14 +22,48 @@ async def attempt_send(dut, data):
     dut.write_en.value = 0
 
     await RisingEdge(dut.clk)
-    
+
+
+BAUD_RATE = 115200
+BIT_TIME_NS = round(1000000000/BAUD_RATE)
+
+async def rx(dut):
+    await FallingEdge(dut.tx)
+
+    await Timer(BIT_TIME_NS/2, unit="ns")
+
+    assert int(dut.tx.value) ==0
+
+    value = 0
+
+    for i in range(8):
+        await Timer(BIT_TIME_NS, unit="ns")
+
+        bit = int(dut.tx.value)
+        value = value | bit<<i
+
+    await Timer(BIT_TIME_NS, unit="ns")
+
+    assert int(dut.tx.value) ==1
+
+    return value
+
 
 @cocotb.test()
 async def test_tx_fifo(dut):
-    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    cocotb.start_soon(Clock(dut.clk, 20, unit="ns").start())
 
     await reset_dut(dut)
 
-    for i in range(0, 15):
-        await attempt_send(dut, i*3)
+    expected = [i*3 for i in range(15)]
+
+    for data in expected:
+        await attempt_send(dut, data)
+
+    for expected_data in expected:
+        result = await rx(dut)
+    
+        assert result == expected_data
+
+    # await Timer(2, unit="ms")
 
