@@ -20,6 +20,15 @@ module uart_tx_fifo #(
     logic [WIDTH-1:0] fifo_read_data;
     logic empty;
 
+    typedef enum logic[1:0] {
+        IDLE, 
+        READ,
+        START_TX,
+        WAIT
+    } state_t;
+
+    state_t state;
+
     fifo fifo_module(
         .clk(clk),
         .reset(reset),
@@ -41,15 +50,31 @@ module uart_tx_fifo #(
 
     always_ff @(posedge clk) begin
         if(reset) begin
+            state <= IDLE;
+            fifo_read_en <= 0;
+            tx_start <= 0; 
         end
-        else begin
+        else if(state == IDLE) begin
             if(~empty && ~tx_busy) begin
-                fifo_read_en <= 1;
-                data_in_tx <= fifo_read_data;
+                state <= READ;
             end
-            else
-                fifo_read_en <=0;
         end
+        else if(state == READ) begin
+            fifo_read_en <= 1;
+            state <= START_TX;
+        end
+        else if(state == START_TX) begin
+            data_in_tx <= fifo_read_data;
+            fifo_read_en <=0;
+            tx_start <= 1;
+            state <= WAIT;
+        end
+        else if(state == WAIT) begin
+            if(tx_busy == 0)
+                state <= IDLE;
+        end
+
+
     end
 
 endmodule
@@ -320,6 +345,7 @@ module fifo #(
             read_ptr <=0;
             write_ptr <=0;
             count <= 0;
+
         end
         else begin
             if(write_en && !full) begin
