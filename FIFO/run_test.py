@@ -8,9 +8,13 @@ runner.build(
     sources=[project_dir/"fifo.sv"],
     hdl_toplevel="fifo",
     always=True,
+    waves=True,
+
 )
 
 runner.test(
     hdl_toplevel="fifo",
     test_module="fifo_tb",
+    waves=True,
+
 )

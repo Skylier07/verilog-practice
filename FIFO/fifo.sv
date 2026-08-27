@@ -31,8 +31,6 @@ module fifo #(
             if(write_en && !full) begin
                 if(~read_en)
                     count<= count+1;
-                else if(read_en && write_en)
-                    count <= 0;
                 mem[write_ptr] <= write_data;
                 if(write_ptr>=(DEPTH)) begin
                     write_ptr <= 0;
