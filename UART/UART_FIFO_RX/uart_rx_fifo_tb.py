@@ -65,6 +65,33 @@ async def wait_for_bytes(dut, bytes):
     await ReadOnly()
     await NextTimeStep()
 
+async def aggresive_drain(dut):
+    for _ in range(10):
+        await FallingEdge(dut.clk)
+        dut.rx_read_en.value = 1
+
+        await RisingEdge(dut.clk)
+        await ReadOnly()
+
+        result = int(dut.rx_read_data.value)
+        assert result == expected.popleft()
+        await FallingEdge(dut.clk)
+        
+
+        dut.rx_read_en.value = 0
+
+async def attempt_send_and_record(dut, data):
+    await FallingEdge(dut.clk)
+    if(dut.rx_full.value == 1):
+        await aggresive_drain(dut)
+    else:
+        dut.tx_write_data.value = data
+        expected.append(data)
+        dut.tx_write_en.value = 1
+        await RisingEdge(dut.clk)
+        dut.tx_write_en.value = 0
+
+
 
 @cocotb.test()
 async def test_simple_behaviors(dut):
@@ -181,3 +208,15 @@ async def random_stream(dut):
         if(random.randint(0, 20)<3 and (int(dut.rx_empty.value)==0)):
             result = await attempt_read(dut)
             assert result == expected.popleft()
+
+
+@cocotb.test()
+async def hostile_random_test(dut):
+    cocotb.start_soon(Clock(dut.clk, 20, unit="ns").start())
+
+    await reset_dut(dut)
+
+    await ReadOnly()
+    await NextTimeStep()
+
+    #
