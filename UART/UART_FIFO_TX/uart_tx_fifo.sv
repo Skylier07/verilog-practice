@@ -11,14 +11,14 @@ module uart_tx_fifo #(
     input logic write_en,
     input logic [WIDTH-1:0] write_data,
     output logic full,
-    output logic tx
+    output logic tx,
+    output logic empty
 );
     logic tx_start;
     logic [WIDTH-1:0]data_in_tx;
     logic tx_busy;
     logic fifo_read_en;
     logic [WIDTH-1:0] fifo_read_data;
-    logic empty;
     logic has_started;
 
     typedef enum logic[2:0] {
