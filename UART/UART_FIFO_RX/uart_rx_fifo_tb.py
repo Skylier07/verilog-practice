@@ -67,6 +67,9 @@ async def wait_for_bytes(dut, bytes):
 
 async def aggresive_drain(dut):
     for _ in range(10):
+        if (int(dut.rx_empty.value) == 1):
+            return
+        
         await FallingEdge(dut.clk)
         dut.rx_read_en.value = 1
 
@@ -82,20 +85,35 @@ async def aggresive_drain(dut):
 
 async def attempt_send_and_record(dut, data):
     await FallingEdge(dut.clk)
-    if(dut.rx_full.value == 1):
-        await aggresive_drain(dut)
+    if(dut.tx_full.value == 1):
+        return False
     else:
         dut.tx_write_data.value = data
-        expected.append(data)
         dut.tx_write_en.value = 1
         await RisingEdge(dut.clk)
-        dut.tx_write_en.value = 0
+        await FallingEdge(dut.clk)
+        dut.tx_write_en.value= 0
 
+        expected.append(data)
 
+        return True
+
+async def one_tick_valid(dut):
+    prev_valid = 0
+
+    while True:
+        await RisingEdge(dut.clk)
+        await ReadOnly()
+
+        current_valid = int(dut.rx_data_valid.value)
+        assert not (prev_valid and current_valid)
+
+        prev_valid = current_valid
 
 @cocotb.test()
 async def test_simple_behaviors(dut):
     cocotb.start_soon(Clock(dut.clk, 20, unit="ns").start())
+    cocotb.start_soon(one_tick_valid(dut))
 
     await reset_dut(dut)
 
@@ -219,4 +237,86 @@ async def hostile_random_test(dut):
     await ReadOnly()
     await NextTimeStep()
 
-    #
+    sent = 0
+    expected.clear()
+
+    while sent < 1000:
+        if (int(dut.rx_full.value) ==1):
+            await aggresive_drain(dut)
+
+
+
+        data = random.randint(0, 255)
+        if(await attempt_send_and_record(dut, data)):
+            sent+=1
+
+        await RisingEdge(dut.clk)
+
+
+    while expected:
+        await wait_for_rx(dut)
+
+        result = await attempt_read(dut)
+
+        assert(result == expected.popleft())
+
+    assert(int(dut.rx_empty.value) == 1)
+
+
+
+@cocotb.test()
+async def reset_test(dut):
+    cocotb.start_soon(Clock(dut.clk, 20, unit="ns").start())
+
+    await reset_dut(dut)
+
+    await ReadOnly()
+    await NextTimeStep()
+
+    sent = 0
+    expected.clear()
+
+    while sent < 1000:
+        if (int(dut.rx_full.value) ==1):
+            await aggresive_drain(dut)
+
+        if random.randint(0, 25) == 5:
+            break
+
+        data = random.randint(0, 255)
+        if(await attempt_send_and_record(dut, data)):
+            sent+=1
+
+        await RisingEdge(dut.clk)
+
+
+    await reset_dut(dut)
+
+    await ReadOnly()
+    await NextTimeStep()
+
+    assert dut.rx_empty.value == 1
+
+    expected.clear()
+
+    while sent < 100:
+        if (int(dut.rx_full.value) ==1):
+            await aggresive_drain(dut)
+
+
+
+        data = random.randint(0, 255)
+        if(await attempt_send_and_record(dut, data)):
+            sent+=1
+
+        await RisingEdge(dut.clk)
+
+
+    while expected:
+        await wait_for_rx(dut)
+
+        result = await attempt_read(dut)
+
+        assert(result == expected.popleft())
+
+    assert(int(dut.rx_empty.value) == 1)
