@@ -8,6 +8,7 @@ I try to practice and learn **everyday** either through this repo or HDLBits. Th
 
 **This repo is temporarily archived as I move into making my first RISC-V CPU project**
 Moving to https://github.com/Skylier07/RISC-V-CPU
+
 [![Last Commit](https://img.shields.io/github/last-commit/Skylier07/verilog-practice)](https://github.com/Skylier07/RISC-V-CPU/commits/main)
 
 ---
